@@ -65,25 +65,21 @@ void walker_process()
     //       "Rank X: Walker finished in Y steps."
     //    b. Send an integer message to the controller (rank 0) to signal completion.
     //    c. Break the loop.
+    std::srand(time(NULL) + world_rank);
     int position=0;
-    for (int step=1;step<=max_steps;++step)
+    int step;
+    for (step=1; step<=max_steps; ++step)
     {
-        int move=(rand()%2==0)?-1:1;
+        int move=(std::rand()%2==0) ? -1:1;
         position+=move;
-        if (position<-domain_size||position>domain_size)
+        if (position< -domain_size||position>domain_size)
         {
-            std::cout << "Rank" << world_rank << ":Walker finished in" << step << "steps." << std::endl;
-            int message=step; 
-            MPI_Send(&message,1,MPI_INT,0,0,MPI_COMM_WORLD);
             break;
         }
-        if (step==max_steps)
-        {
-            std::cout << "Rank" << world_rank << ":walker finished in" << step << "steps." << std::endl;
-            int message=step;
-            MPI_Send(&message,1,MPI_INT,0,0,MPI_COMM_WORLD);
-        }
     }
+    std::cout << "Rank" << world_rank << ":Walker finished in" << step << "steps." << std::endl;
+    int dmsg=1;
+    MPI_Send(&dmsg,1,MPI_INT,0,0,MPI_COMM_WORLD);
 }
 
 void controller_process()
@@ -95,14 +91,13 @@ void controller_process()
     //    a message from any walker that finishes.
     // 4. After receiving messages from all walkers, print a final summary message.
     //    For example: "Controller: All X walkers have finished."
-    int completed_walkers=0;
     int num_walkers=world_size-1;
-    while (completed_walkers<num_walkers)
+    int drcv;
+    MPI_Status status;
+
+    for (int i=0;i<num_walkers;++i)
     {
-        int message;
-        MPI_Status status;
-        MPI_Recv(&message,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);
-        ++completed_walkers;
+        MPI_Recv(&drcv,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);
     }
-    std::cout << "Controller:All" << num_walkers << "walkers have finished." << std::endl;
+    std::cout << "Controller: All " << num_walkers << " walkers have finished." << std::endl
 }
