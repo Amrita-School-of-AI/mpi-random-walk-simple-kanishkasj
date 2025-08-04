@@ -81,7 +81,6 @@ void walker_process()
     int dmsg=1;
     MPI_Send(&dmsg,1,MPI_INT,0,0,MPI_COMM_WORLD);
 }
-
 void controller_process()
 {
     // TODO: Implement the logic for the controller process.
@@ -94,10 +93,9 @@ void controller_process()
     int num_walkers=world_size-1;
     int drcv;
     MPI_Status status;
-
     for (int i=0;i<num_walkers;++i)
     {
         MPI_Recv(&drcv,1,MPI_INT,MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_WORLD,&status);
     }
-    std::cout << "Controller: All " << num_walkers << " walkers have finished." << std::endl
+    std::cout << "Controller: All " << num_walkers << " walkers have finished." << std::endl;
 }
